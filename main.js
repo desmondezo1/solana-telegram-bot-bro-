@@ -104,8 +104,17 @@ function organizeProjectByChain(projects){
 
 
 bot.onText(/\/start/, (msg) => {
-    bot.sendMessage(msg.chat.id, "Welcome to $BRO Solana Launch Bot");
-    
+    const option = {
+        reply_markup: JSON.stringify({
+            keyboard: [
+              ['/list', '/add'],
+            ],
+            resize_keyboard: true,
+            one_time_keyboard: true
+          })
+    };
+
+    bot.sendMessage(msg.chat.id, "Welcome to $BRO Solana Launch Bot", option);
 });
 
 

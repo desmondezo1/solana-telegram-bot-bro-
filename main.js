@@ -90,9 +90,9 @@ async function messageFormat(projects, type='time'){
           const emoji = typeToEmoji[project.type] || '🟠';
           message += `${formatDateAndTimeUTC(project.datetime, type)} | ${project.type} | ${project.taxRatio} | ${emoji} <a href="${project.link}">${project.name}</a>\n`;
         });
-        message += `\n\n`; // Add a newline for spacing
+        message += `\n`; // Add a newline for spacing
 
-      message += `This Bot is only usable by members of our community at @BroonSolana \n`;
+      message += `This Bot is a free service to all our Crypto Bros by @BroonSolana \n`;
 
       return message;
 }

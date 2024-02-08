@@ -305,4 +305,35 @@ bot.onText(/\/bro tomorrow/, (msg) => {
 });
   
 
+bot.onText(/\/bro remove (.+)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const fromUsername = msg.from.username;
+  const projectName = match[1]; // Capture the project name from the command
+
+  // Optional: Check if the user is authorized to remove projects
+  if (!await isAdmin(fromUsername)) {
+      bot.sendMessage(chatId, "Sorry, you're not authorized to remove projects.");
+      return;
+  }
+
+  // Proceed with removing the project
+  removeProjectByName(projectName, chatId);
+});
+
+async function removeProjectByName(projectName, chatId) {
+  try {
+      const result = await Project.deleteOne({ name: projectName });
+      if (result.deletedCount === 0) {
+          // No project was found with the given name
+          bot.sendMessage(chatId, `No project found with the name "${projectName}".`);
+      } else {
+          // Project was successfully removed
+          bot.sendMessage(chatId, `Project "${projectName}" has been successfully removed.`);
+      }
+  } catch (error) {
+      console.error('Error removing project:', error);
+      bot.sendMessage(chatId, "An error occurred while trying to remove the project.");
+  }
+}
+
 console.log('Bot has been started...');

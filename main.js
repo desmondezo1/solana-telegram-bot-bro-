@@ -25,6 +25,11 @@ async function isAdmin(username) {
     return !!admin;
 }
 
+async function isSuperAdmin(username) {
+  const admin = await Admin.findOne({ username: username, type: 'super admin' });
+  return !!admin; 
+}
+
 //format date time in utc
 function formatDateAndTimeUTC(date, type='time') {
     const padZero = (num) => num.toString().padStart(2, '0');
@@ -335,5 +340,45 @@ async function removeProjectByName(projectName, chatId) {
       bot.sendMessage(chatId, "An error occurred while trying to remove the project.");
   }
 }
+
+// Adding an admin
+bot.onText(/\/bro_add_admin (\S+)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const fromUsername = msg.from.username;
+  const newAdminUsername = match[1];
+
+  if (!await isSuperAdmin(fromUsername)) {
+    bot.sendMessage(chatId, "Only super admins can add other admins.");
+    return;
+  }
+
+  // Add new admin as 'admin' type
+  const newAdmin = new Admin({ username: newAdminUsername, type: 'admin' });
+  await newAdmin.save();
+
+  bot.sendMessage(chatId, `Admin ${newAdminUsername} added successfully.`);
+});
+
+// Removing an admin
+bot.onText(/\/bro_remove_admin (\S+)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const fromUsername = msg.from.username;
+  const adminUsernameToRemove = match[1];
+
+  if (!await isSuperAdmin(fromUsername)) {
+    bot.sendMessage(chatId, "Only super admins can remove admins.");
+    return;
+  }
+
+  // Remove the admin
+  const result = await Admin.deleteOne({ username: adminUsernameToRemove });
+
+  if (result.deletedCount === 0) {
+    bot.sendMessage(chatId, `No admin found with the username "${adminUsernameToRemove}".`);
+  } else {
+    bot.sendMessage(chatId, `Admin ${adminUsernameToRemove} removed successfully.`);
+  }
+});
+
 
 console.log('Bot has been started...');

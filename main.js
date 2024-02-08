@@ -72,7 +72,8 @@ function handleMessageResponse(chatId, message) {
 
 async function messageFormat(projects, type='time'){
     let message = '<b><u>LAUNCH LIST By @BroonSolana </u></b>\n';
-    message += !type? '\n' :`Date: ${formatDateAndTimeUTC(new Date(), 'date')}\nAll times are in UTC\n\n`;
+    message += !type? '\n' :`Date: ${formatDateAndTimeUTC(new Date(), 'date')}\n`;
+    message += 'All times are in UTC\n\n';
 
     const livePresales = await fetchLivePresales(Project);
     

@@ -3,14 +3,15 @@ const TelegramBot = require('node-telegram-bot-api');
 const Project = require('./models/projectModel'); 
 const Admin = require('./models/adminModel'); // Path to your admin model file
 require('dotenv').config()
-const {TELEGRAM_BOT_TOKEN} = process.env
+const {TELEGRAM_BOT_TOKEN, GROUP_ID, MONGODB_URI} = process.env
 
 
 const token = TELEGRAM_BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
 // MongoDB connection string
-const uri = "mongodb+srv://dezy_dev:Password123@cluster0.q0mthib.mongodb.net/bro_solana_bot_launch?retryWrites=true&w=majority";
+const uri = MONGODB_URI;
+
 
 
 // Connect to MongoDB
@@ -25,7 +26,7 @@ async function isAdmin(username) {
 }
 
 //format date time in utc
-function formatDateAndTimeUTC(date) {
+function formatDateAndTimeUTC(date, type='time') {
     const padZero = (num) => num.toString().padStart(2, '0');
 
     // Extracting components in UTC
@@ -38,7 +39,15 @@ function formatDateAndTimeUTC(date) {
 
     // Constructing the formatted date and time string in "06 Feb 2024 17:00" format
     // return `${day} ${month} ${year} ${hours}:${minutes}`;
-    return `${hours}:${minutes}`;
+    if(type === 'date'){
+      return `${day} ${month} ${year}`;
+    } else if( type === 'time'){
+      return `${hours}:${minutes}`;
+    } else {
+      return `${day} ${month}`
+    }
+
+    
 }
 
 async function fetchLivePresales(Project) {
@@ -61,49 +70,40 @@ function handleMessageResponse(chatId, message) {
       );
 }
 
-async function messageFormat(projects){
-    let message = '<b><u>LAUNCH LIST By @Bro_Launch_bot</u></b>\n';
-    message += `Date: ${formatDateAndTimeUTC(new Date())}\nAll times are in UTC\n\n`;
+async function messageFormat(projects, type='time'){
+    let message = '<b><u>LAUNCH LIST By @BroonSolana </u></b>\n';
+    message += !type? '\n' :`Date: ${formatDateAndTimeUTC(new Date(), 'date')}\nAll times are in UTC\n\n`;
 
     const livePresales = await fetchLivePresales(Project);
-
-    for (const [chain, chainProjects] of Object.entries(organizeProjectByChain(projects))) {
-        message += `${chain}\n`;
-        chainProjects.forEach(project => {
-          message += ` 🟠 ${formatDateAndTimeUTC(project.datetime)} - ${project.type} |${project.taxRatio}| <a href="https://t.me/${project.link}">${project.link}</a>\n`;
+    
+    const typeToEmoji = {
+      'PP': '🟢', 
+      'WL': '🟠',
+      'LA': '🟣',
+      'NFT': '🔵',
+      'AD': '🟡'
+      
+    };
+  
+        projects.forEach(project => {
+          const emoji = typeToEmoji[project.type] || '🟠';
+          message += `${formatDateAndTimeUTC(project.datetime, type)}|${project.type}|${project.taxRatio}| ${emoji} <a href="${project.link}">${project.name}</a>\n`;
         });
-        message += `\n`; // Add a newline for spacing
-      }
+        message += `\n\n`; // Add a newline for spacing
 
-
-
-      if (livePresales.length > 0) {
-        message += `⏲ Live Presales:\n`;
-        livePresales.forEach(project => {
-          message += `<a href="${project.website}">${project.link}</a>\n`;
-        });
-        message += `\n`; // Add a newline for spacing
-      }
-
-      message += `Note: All business inquiries or list suggestions must be sent to @wakame8\n`;
+      message += `This Bot is only usable by members of our community at @BroonSolana \n`;
 
       return message;
-}
-
-function organizeProjectByChain(projects){
-    return projects.reduce((acc, project) => {
-        const chain = project.chain || '🔗 Other';
-        if (!acc[chain]) {
-          acc[chain] = [];
-        }
-        acc[chain].push(project);
-        return acc;
-      }, {});
 }
 
 
 
 bot.onText(/\/start/, (msg) => {
+
+    if(msg.chat.id !== GROUP_ID){
+        return;
+    }
+
     const option = {
         reply_markup: JSON.stringify({
             keyboard: [
@@ -117,10 +117,15 @@ bot.onText(/\/start/, (msg) => {
     bot.sendMessage(msg.chat.id, "Welcome to $BRO Solana Launch Bot", option);
 });
 
+bot.on('message', (msg) => {
+  console.log({ ent: msg.entities[0].url})
+})
+
 
 // Command to get instructions for adding a project
 bot.onText(/\/add/, async (msg) => {
     const chatId = msg.chat.id;
+
     const fromUsername = msg.from.username;
     if (!await isAdmin(fromUsername)) {
         bot.sendMessage(chatId, "Sorry, you're not authorized to add projects.");
@@ -128,16 +133,15 @@ bot.onText(/\/add/, async (msg) => {
       }
 
     const instructions = `To add a new project, please use the following format:\n` +
-    `/submit <date> <time> <type> <taxRatio> <link> <chainWithEmoji> <website>\n\n` +
+    `/submit <date> <time> <type> <taxRatio> <link>\n\n` +
     `Example:\n` +
-    `/submit 09/02/2024 15:00 WL 0/0 @ExampleLink ✅_Ethereum https://example.com\n\n` +
+    `/submit 09/02/2024 15:00 WL 0/0 ExampleLink\n\n` +
     `Where:\n` +
     `- <date> is in DD/MM/YYYY format\n` +
     `- <time> is in 24hr UTC format (HH:MM)\n` +
-    `- <type> is the project type (e.g., WL (Whitelist),  FL (Fair Launch), LA (Launchpad), or PP (Presale)\n` +
+    `- <type> is the project type (e.g., WL (Whitelist Presale), NFT (NFT Presales), AD (Airdrops)  FL (Fair Launch), LA (Launched), PP (Public Presale)\n` +
     `- <taxRatio> is the buy/sell tax (e.g., 0/0 for no tax)\n` +
     `- <link> is the Telegram handle or project link\n` +
-    `- <chainWithEmoji> is the blockchain category followed by an emoji (e.g., ✅_Ethereum)\n\n` +
     `Please replace the example values with your project details.`;
 
     bot.sendMessage(chatId, instructions);
@@ -145,10 +149,12 @@ bot.onText(/\/add/, async (msg) => {
   
 
 // Command to submit a new project, now including date in the submission
-    bot.onText(/\/submit (\d{2}\/\d{2}\/\d{4}) (\d{2}:\d{2}) (\w+) (\d+\/\d+) @(\S+) (\S+) (\S+)/, async (msg, match) => {
-    
+// bot.onText(/\/submit (\d{2}\/\d{2}\/\d{4}) (\d{2}:\d{2}) (\w+) (\d+\/\d+) @(\S+) (\S+) (\S+)/, async (msg, match) => {
+  bot.onText(/\/submit (\d{2}\/\d{2}\/\d{4}) (\d{2}:\d{2}) (\w+) (\d+\/\d+) (.+)/, async (msg, match) => {
+
     const chatId = msg.chat.id;
     const fromUsername = msg.from.username;
+
   
     // Add your admin check here
     if (!await isAdmin(fromUsername)) {
@@ -167,12 +173,22 @@ bot.onText(/\/add/, async (msg) => {
 
     const newdatetime = new Date(datetimeISO);
 
+    // Initialize projectLink as null
+    let projectLink = null;
+
+    // Check if there are entities and a URL entity
+    if (msg.entities && msg.entities.some(entity => entity.type === 'text_link')) {
+      const urlEntity = msg.entities.find(entity => entity.type === 'text_link');
+      projectLink = urlEntity.url; // Extract the URL from the entity
+    }
+
     // Proceed with adding the project to the database
     const newProject = new Project({
       datetime: newdatetime, // Store combined date and time
       type,
+      name: link,
       taxRatio,
-      link: `${link}`,
+      link: projectLink,
       chain,
       website 
     });
@@ -186,7 +202,7 @@ bot.onText(/\/add/, async (msg) => {
   });
   
 
-bot.onText(/\/list/, async (msg) => {
+bot.onText(/\/bro later/, async (msg) => {
     const chatId = msg.chat.id;
 
     const fromUsername = msg.from.username;
@@ -198,11 +214,13 @@ bot.onText(/\/list/, async (msg) => {
 
 
     const now = new Date(); // Current date and time in UTC
-    const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
-    const endOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59));
+    // const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
+    // const endOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59));
+
+    const nextTomorrowStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 2, 0, 0, 0));
       
     Project.find({
-        datetime: { $lte: endOfToday,  $gte: startOfToday}
+        datetime: { $gte: nextTomorrowStart}
     })
     .then(async (projects) => {
       if (projects.length === 0) {
@@ -210,26 +228,19 @@ bot.onText(/\/list/, async (msg) => {
         return;
       }
 
-    let message = await messageFormat(projects)
+    let message = await messageFormat(projects, '')
   
-    // let message = `Today's (${startOfToday.toISOString().slice(5, 10)}) Tracked Projects:\nTimes are in UTC\n\n`;
-
-    // projects.forEach(project => {
-    //     const formattedDateTime = formatDateAndTimeUTC(project.datetime);
-    //     // Append the formatted date and time to your message
-    //     message += `${formattedDateTime}|${project.type}|${project.taxRatio}| 📈📲 ${project.link}\n`;
-    // });
-  
-        handleMessageResponse(chatId, message)
+    handleMessageResponse(chatId, message)
 
     })
     .catch(err => console.error(err));
   });
   
 
-bot.onText(/\/bro today/, async (msg) => {
+bot.onText(/\/bro today/, (msg) => {
     const chatId = msg.chat.id;
-    
+
+
     // Calculate today's date range in UTC
     const now = new Date(); // Current date and time in UTC
     const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
@@ -241,18 +252,14 @@ bot.onText(/\/bro today/, async (msg) => {
         $lt: endOfDay
       }
     })
-    .then(projects => {
+    .then(async (projects) => {
       if (projects.length === 0) {
         bot.sendMessage(chatId, "No projects launching today.");
         return;
       }
   
-      let message = `Today's (${startOfDay.toISOString().slice(0, 10)}) Tracked Projects:\nTimes are in UTC\n\n`;
-      projects.forEach(project => {
-        // Format datetime to display only the relevant part (time)
-        const projectTime = project.datetime.toISOString().slice(11, 16); // Extracting time part
-        message += `${projectTime}|${project.type}|${project.taxRatio}| 📈📲 ${project.link}\n`;
-      });
+
+      let message = await messageFormat(projects)
   
       handleMessageResponse(chatId, message)
 
@@ -261,11 +268,10 @@ bot.onText(/\/bro today/, async (msg) => {
   });
  
 
-bot.onText(/\/bro tomorrow/, async (msg) => {
+bot.onText(/\/bro tomorrow/, (msg) => {
   const chatId = msg.chat.id;
-  
-  // Calculate tomorrow's date range in UTC
-  // Using refined tomorrow's date calculation
+    
+
   const now = new Date();
   const utcNow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const tomorrowStart = new Date(utcNow);
@@ -279,19 +285,17 @@ bot.onText(/\/bro tomorrow/, async (msg) => {
       $lte: tomorrowEnd
     }
   })
-  .then(projects => {
+  .then(async (projects) => {
     if (projects.length === 0) {
       bot.sendMessage(chatId, "No projects launching tomorrow.");
       return;
     }
 
-    let message = `Tomorrow's (${tomorrowStart.toISOString().slice(0, 10)}) Tracked Projects:\nTimes are in UTC\n\n`;
-    projects.forEach(project => {
-      const projectTime = project.datetime.toISOString().slice(11, 16); // Extracting time part
-      message += `${projectTime}|${project.type}|${project.taxRatio}| 📈📲 ${project.link}\n`;
-    });
 
-    handleMessageResponse(chatId, message);
+
+    let message = await messageFormat(projects)
+  
+    handleMessageResponse(chatId, message)
 
   })
   .catch(err => {

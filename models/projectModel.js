@@ -5,6 +5,7 @@ const projectSchema = new mongoose.Schema({
   type: String,
   taxRatio: String,
   link: String,
+  name: String,
   chain: String,
   website: String,
 }, { collection: 'projects' }); 

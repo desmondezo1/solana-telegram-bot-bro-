@@ -87,7 +87,7 @@ async function messageFormat(projects, type='time'){
   
         projects.forEach(project => {
           const emoji = typeToEmoji[project.type] || '🟠';
-          message += `${formatDateAndTimeUTC(project.datetime, type)}|${project.type}|${project.taxRatio}| ${emoji} <a href="${project.link}">${project.name}</a>\n`;
+          message += `${formatDateAndTimeUTC(project.datetime, type)} | ${project.type} | ${project.taxRatio} | ${emoji} <a href="${project.link}">${project.name}</a>\n`;
         });
         message += `\n\n`; // Add a newline for spacing
 

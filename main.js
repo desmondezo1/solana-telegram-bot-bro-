@@ -26,7 +26,7 @@ async function isAdmin(username) {
 }
 
 async function isSuperAdmin(username) {
-  const admin = await Admin.findOne({ username: username, type: 'super admin' });
+  const admin = await Admin.findOne({ username: username, type: 'super_admin' });
   return !!admin; 
 }
 

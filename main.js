@@ -62,7 +62,7 @@ async function fetchLivePresales(Project) {
     const res = await Project.find({
       datetime: { $lte: now,  $gte: startOfToday}, // The presale has already started
       type: 'PP'
-    }).lean();
+    }).sort({ datetime: 1 }).lean();
 
     return res;
   }
@@ -225,7 +225,7 @@ bot.onText(/\/bro later/, async (msg) => {
       
     Project.find({
         datetime: { $gte: nextTomorrowStart}
-    })
+    }).sort({ datetime: 1 }).lean()
     .then(async (projects) => {
       if (projects.length === 0) {
         bot.sendMessage(chatId, "No projects launching today.");
@@ -255,7 +255,7 @@ bot.onText(/\/bro today/, (msg) => {
         $gte: startOfDay,
         $lt: endOfDay
       }
-    })
+    }).sort({ datetime: 1 }).lean()
     .then(async (projects) => {
       if (projects.length === 0) {
         bot.sendMessage(chatId, "No projects launching today.");
@@ -288,7 +288,7 @@ bot.onText(/\/bro tomorrow/, (msg) => {
       $gte: tomorrowStart,
       $lte: tomorrowEnd
     }
-  })
+  }).sort({ datetime: 1 }).lean()
   .then(async (projects) => {
     if (projects.length === 0) {
       bot.sendMessage(chatId, "No projects launching tomorrow.");

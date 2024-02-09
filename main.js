@@ -75,9 +75,12 @@ function handleMessageResponse(chatId, message) {
       );
 }
 
-async function messageFormat(projects, type='time'){
+async function messageFormat(projects, type='time', today=true ){
     let message = '<b><u>LAUNCH LIST By @BroonSolana </u></b>\n';
-    message += !type? '\n' :`Date: ${formatDateAndTimeUTC(new Date(), 'date')}\n`;
+    const now = new Date()
+    let date = today? now : new Date(now.setDate(now.getDate() + 1));
+    
+    message += !type? '\n' :`Date: ${formatDateAndTimeUTC(date, 'date')}\n`;
     message += 'All times are in UTC\n\n';
 
     const livePresales = await fetchLivePresales(Project);
@@ -294,7 +297,7 @@ bot.onText(/\/bro tomorrow/, (msg) => {
 
 
 
-    let message = await messageFormat(projects)
+    let message = await messageFormat(projects, 'time', false)
   
     handleMessageResponse(chatId, message)
 

@@ -121,11 +121,11 @@ bot.onText(/\/start/, (msg) => {
     };
 
     let message = "Welcome to $BRO Solana Launch Bot \n";
-    message += `Type the following commands in your group chat to use the Bot
+    message += `Type the following commands in your group chat to use the Bot\n
 
-    \/bro today
-    \/bro tomorrow
-    \/bro later`;
+    \/bro today\n
+    \/bro tomorrow\n
+    \/bro later\n`;
 
     bot.sendMessage(msg.chat.id, message, option);
 });

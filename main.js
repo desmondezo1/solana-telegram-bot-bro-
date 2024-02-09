@@ -106,10 +106,6 @@ async function messageFormat(projects, type='time'){
 
 bot.onText(/\/start/, (msg) => {
 
-    if(msg.chat.id !== GROUP_ID){
-        return;
-    }
-
     const option = {
         reply_markup: JSON.stringify({
             keyboard: [
@@ -217,14 +213,6 @@ bot.onText(/\/add/, async (msg) => {
 
 bot.onText(/\/bro later/, async (msg) => {
     const chatId = msg.chat.id;
-
-    const fromUsername = msg.from.username;
-    if (!await isAdmin(fromUsername)) {
-        bot.sendMessage(chatId, "Sorry, you're not authorized to add projects.");
-        return;
-      }
-
-
 
     const now = new Date(); // Current date and time in UTC
     // const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));

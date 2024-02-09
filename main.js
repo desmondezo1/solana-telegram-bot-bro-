@@ -120,7 +120,14 @@ bot.onText(/\/start/, (msg) => {
           })
     };
 
-    bot.sendMessage(msg.chat.id, "Welcome to $BRO Solana Launch Bot", option);
+    let message = "Welcome to $BRO Solana Launch Bot \n";
+    message += `Type the following commands in your group chat to use the Bot
+
+    \/bro today
+    \/bro tomorrow
+    \/bro later`;
+
+    bot.sendMessage(msg.chat.id, message, option);
 });
 
 bot.on('message', (msg) => {

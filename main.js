@@ -109,7 +109,7 @@ bot.onText(/\/start/, (msg) => {
     const option = {
         reply_markup: JSON.stringify({
             keyboard: [
-              ['/list', '/add'],
+              ['/bro today', '/bro tomorrow', '/bro later'],
             ],
             resize_keyboard: true,
             one_time_keyboard: true

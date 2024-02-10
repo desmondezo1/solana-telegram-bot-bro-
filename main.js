@@ -129,13 +129,10 @@ bot.onText(/\/start/, (msg) => {
     bot.sendMessage(msg.chat.id, message, option);
 });
 
-bot.on('message', (msg) => {
-  console.log({ ent: msg.entities[0].url})
-})
 
 
 // Command to get instructions for adding a project
-bot.onText(/\/add/, async (msg) => {
+bot.onText(/\/bro add/, async (msg) => {
     const chatId = msg.chat.id;
 
     const fromUsername = msg.from.username;

@@ -225,7 +225,7 @@ bot.onText(/\/bro later/, async (msg) => {
     }).sort({ datetime: 1 }).lean()
     .then(async (projects) => {
       if (projects.length === 0) {
-        bot.sendMessage(chatId, "No projects launching today.");
+        bot.sendMessage(chatId, "No projects announced yet.");
         return;
       }
 
@@ -255,7 +255,7 @@ bot.onText(/\/bro today/, (msg) => {
     }).sort({ datetime: 1 }).lean()
     .then(async (projects) => {
       if (projects.length === 0) {
-        bot.sendMessage(chatId, "No projects launching today.");
+        bot.sendMessage(chatId, "No projects announced yet.");
         return;
       }
   
@@ -288,7 +288,7 @@ bot.onText(/\/bro tomorrow/, (msg) => {
   }).sort({ datetime: 1 }).lean()
   .then(async (projects) => {
     if (projects.length === 0) {
-      bot.sendMessage(chatId, "No projects launching tomorrow.");
+      bot.sendMessage(chatId, "No projects announced yet.");
       return;
     }
 

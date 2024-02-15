@@ -100,7 +100,7 @@ async function messageFormat(projects, type='time', today=true ){
         });
         message += `\n`; // Add a newline for spacing
 
-      message += `This Bot is a free service to all our Crypto Bros by @BroonSolana \n`;
+      message += `This Bot is a free service to all our Crypto Bros by @BROonSolana \n`;
 
       return message;
 }

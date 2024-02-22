@@ -100,7 +100,7 @@ async function messageFormat(projects, type='time', today=true ){
         });
         message += `\n`; // Add a newline for spacing
 
-      message += `This Bot is a free service to all our Crypto Bros by @BROonSolana \n`;
+      message += `🟢 Public Presale 🟠 Whitelist Presale 🟣 Launch 🔵 NFT 🟡 AD \n`;
 
       return message;
 }

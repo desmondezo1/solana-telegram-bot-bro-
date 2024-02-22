@@ -100,7 +100,7 @@ async function messageFormat(projects, type='time', today=true ){
         });
         message += `\n`; // Add a newline for spacing
 
-      message += `🟢 Public Presale 🟠 Whitelist Presale 🟣 Launch 🔵 NFT 🟡 AD \n`;
+      message += `🟢 Public Presale 🟠 Whitelist 🟣 Launch 🔵 NFT 🟡 Airdrop \n`;
 
       return message;
 }

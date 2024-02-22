@@ -76,7 +76,7 @@ function handleMessageResponse(chatId, message) {
 }
 
 async function messageFormat(projects, type='time', today=true ){
-    let message = '<b><u>LAUNCH LIST By @BROonSolana </u></b>\n';
+    let message = '<b><u>LAUNCH LIST By</u> @BROonSolana </b>\n';
     const now = new Date()
     let date = today? now : new Date(now.setDate(now.getDate() + 1));
     
